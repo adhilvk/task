@@ -21,9 +21,9 @@ export class AnimalsService {
   private hasR2Config(): boolean {
     return Boolean(
       process.env.R2_ACCOUNT_ID &&
-        process.env.R2_ACCESS_KEY_ID &&
-        process.env.R2_SECRET_ACCESS_KEY &&
-        process.env.R2_BUCKET_NAME,
+      process.env.R2_ACCESS_KEY_ID &&
+      process.env.R2_SECRET_ACCESS_KEY &&
+      process.env.R2_BUCKET_NAME,
     );
   }
 
@@ -35,9 +35,7 @@ export class AnimalsService {
     }
 
     try {
-      const { GetObjectCommand, S3Client } = await import(
-        '@aws-sdk/client-s3'
-      );
+      const { GetObjectCommand, S3Client } = await import('@aws-sdk/client-s3');
 
       const s3 = new S3Client({
         region: 'auto',

@@ -1,28 +1,30 @@
 {
-    "services": {
-      "frontend": {
-        "root": "frontend",
-        "framework": "vite"
-      },
-      "backend": {
-        "root": "backend",
-        "entrypoint": "dist/main.js"
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "services": {
+    "frontend": {
+      "root": "frontend",
+      "framework": "vite"
+    },
+    "backend": {
+      "root": "backend",
+      "framework": "nestjs",
+      "entrypoint": "src/main.ts"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/animals",
+      "destination": {
+        "type": "service",
+        "service": "backend"
       }
     },
-    "rewrites": [
-      {
-        "source": "/api(/.*)?",
-        "destination": {
-          "type": "service",
-          "service": "backend"
-        }
-      },
-      {
-        "source": "/(.*)",
-        "destination": {
-          "type": "service",
-          "service": "frontend"
-        }
+    {
+      "source": "/(.*)",
+      "destination": {
+        "type": "service",
+        "service": "frontend"
       }
-    ]
-  }
+    }
+  ]
+}

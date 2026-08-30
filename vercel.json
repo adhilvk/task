@@ -7,8 +7,8 @@
     },
     "backend": {
       "root": "backend",
-      "framework": "nestjs",
-      "entrypoint": "src/main.ts"
+      "framework": "express",
+      "entrypoint": "src/server.ts"
     }
   },
   "rewrites": [

@@ -12,11 +12,44 @@ export class AnimalsService {
     return animals.filter((animal) => this.matchesQuery(animal, query));
   }
 
+  private isActiveFilter(value?: string): value is string {
+    const normalized = value?.trim().toLowerCase();
+    return Boolean(normalized) && normalized !== 'all';
+  }
+
+  private normalizeStatus(value?: string): string {
+    const normalized = value?.trim().toLowerCase();
+
+    if (normalized === 'sold') {
+      return 'sold';
+    }
+
+    if (normalized === 'reserved') {
+      return 'reserved';
+    }
+
+    return 'available';
+  }
+
+  private matchesSpecies(animal: Animal, species: string): boolean {
+    const needle = species.trim().toLowerCase();
+    const speciesValue = animal.species?.trim().toLowerCase() ?? '';
+    const breedValue = animal.breed?.trim().toLowerCase() ?? '';
+
+    if (speciesValue === needle) {
+      return true;
+    }
+
+    const escaped = needle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const word = new RegExp(`\\b${escaped}\\b`);
+    return word.test(speciesValue) || word.test(breedValue);
+  }
+
   private matchesQuery(animal: Animal, query: AnimalQuery): boolean {
     const search = query.name?.trim().toLowerCase();
-    const status = query.status?.trim().toLowerCase();
-    const category = query.category?.trim().toLowerCase();
-    const species = query.species?.trim().toLowerCase();
+    const status = query.status?.trim();
+    const category = query.category?.trim();
+    const species = query.species?.trim();
 
     if (search) {
       const searchableFields = [
@@ -35,15 +68,21 @@ export class AnimalsService {
       }
     }
 
-    if (status && animal.status?.toLowerCase() !== status) {
+    if (
+      this.isActiveFilter(status) &&
+      this.normalizeStatus(animal.status) !== this.normalizeStatus(status)
+    ) {
       return false;
     }
 
-    if (category && animal.category?.toLowerCase() !== category) {
+    if (
+      this.isActiveFilter(category) &&
+      animal.category?.toLowerCase() !== category.toLowerCase()
+    ) {
       return false;
     }
 
-    if (species && animal.species?.toLowerCase() !== species) {
+    if (this.isActiveFilter(species) && !this.matchesSpecies(animal, species)) {
       return false;
     }
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { JSX } from 'react'
 
 import Header, { PawIcon } from './components/Header'
@@ -10,33 +10,29 @@ import * as animalService from './services/animalService'
 import type { Animal } from './types/animal'
 import type {
   CategoryFilter,
-  SpeciesFilter,
   StatusFilter,
 } from './components/InventoryFilters'
+import { filterAnimals, getSpeciesOptions } from './utils/filterAnimals'
 
 import './App.css'
 
 function App(): JSX.Element {
   const [inputValue, setInputValue] = useState<string>('')
+  const [appliedSearch, setAppliedSearch] = useState<string>('')
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('All')
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>('All')
-  const [speciesFilter, setSpeciesFilter] = useState<SpeciesFilter>('All')
+  const [speciesFilter, setSpeciesFilter] = useState<string>('All')
   const [animals, setAnimals] = useState<Animal[]>([])
   const [selectedAnimal, setSelectedAnimal] = useState<Animal | null>(null)
   const [loading, setLoading] = useState<boolean>(false)
   const [error, setError] = useState<string>('')
 
-  async function loadAnimals(name?: string): Promise<void> {
+  async function loadAnimals(): Promise<void> {
     setLoading(true)
     setError('')
 
     try {
-      const data: Animal[] = await animalService.fetchAnimals({
-        name,
-        status: statusFilter === 'All' ? undefined : statusFilter,
-        category: categoryFilter === 'All' ? undefined : categoryFilter,
-        species: speciesFilter === 'All' ? undefined : speciesFilter,
-      })
+      const data: Animal[] = await animalService.fetchAnimals()
       setAnimals(data)
     } catch (err: unknown) {
       setError(
@@ -49,11 +45,27 @@ function App(): JSX.Element {
   }
 
   useEffect(() => {
-    void loadAnimals(inputValue.trim() || undefined)
-  }, [statusFilter, categoryFilter, speciesFilter])
+    void loadAnimals()
+  }, [])
+
+  const speciesOptions = useMemo(
+    () => getSpeciesOptions(animals),
+    [animals],
+  )
+
+  const visibleAnimals = useMemo(
+    () =>
+      filterAnimals(animals, {
+        name: appliedSearch,
+        status: statusFilter,
+        category: categoryFilter,
+        species: speciesFilter,
+      }),
+    [animals, appliedSearch, statusFilter, categoryFilter, speciesFilter],
+  )
 
   function handleSearch(): void {
-    void loadAnimals(inputValue.trim() || undefined)
+    setAppliedSearch(inputValue.trim())
   }
 
   return (
@@ -82,9 +94,10 @@ function App(): JSX.Element {
             status={statusFilter}
             category={categoryFilter}
             species={speciesFilter}
-            onStatusChange={setStatusFilter}
-            onCategoryChange={setCategoryFilter}
-            onSpeciesChange={setSpeciesFilter}
+            speciesOptions={speciesOptions}
+            onStatusChange={(value) => setStatusFilter(value)}
+            onCategoryChange={(value) => setCategoryFilter(value)}
+            onSpeciesChange={(value) => setSpeciesFilter(value)}
           />
         </div>
 
@@ -96,12 +109,16 @@ function App(): JSX.Element {
           <p className="error">{error}</p>
         )}
 
-        {!loading && !error && animals.length === 0 && (
+        {!loading && !error && visibleAnimals.length === 0 && (
           <p className="status">No animals found</p>
         )}
 
-        {!loading && !error && animals.length > 0 && (
-          <AnimalList animals={animals} onViewDetails={setSelectedAnimal} />
+        {!loading && !error && visibleAnimals.length > 0 && (
+          <AnimalList
+            key={`${statusFilter}-${categoryFilter}-${speciesFilter}-${appliedSearch}`}
+            animals={visibleAnimals}
+            onViewDetails={setSelectedAnimal}
+          />
         )}
       </main>
 

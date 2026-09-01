@@ -1,38 +1,41 @@
 import type { ChangeEvent, JSX } from 'react'
+import type { SpeciesOption } from '../utils/filterAnimals'
 
 export const STATUS_FILTERS = ['All', 'Available', 'Reserved', 'Sold'] as const
 export const CATEGORY_FILTERS = ['All', 'Mammal', 'Bird', 'Reptile'] as const
-export const SPECIES_FILTERS = [
-  { value: 'All', label: 'All species' },
-  { value: 'Panthera leo', label: 'Lion' },
-  { value: 'Loxodonta africana', label: 'Elephant' },
-  { value: 'Aptenodytes forsteri', label: 'Penguin' },
-  { value: 'Crocodylus niloticus', label: 'Crocodile' },
-] as const
 
 export type StatusFilter = (typeof STATUS_FILTERS)[number]
 export type CategoryFilter = (typeof CATEGORY_FILTERS)[number]
-export type SpeciesFilter = (typeof SPECIES_FILTERS)[number]['value']
 
 export interface InventoryFiltersProps {
   status: StatusFilter
   category: CategoryFilter
-  species: SpeciesFilter
+  species: string
+  speciesOptions: SpeciesOption[]
   onStatusChange: (value: StatusFilter) => void
   onCategoryChange: (value: CategoryFilter) => void
-  onSpeciesChange: (value: SpeciesFilter) => void
+  onSpeciesChange: (value: string) => void
 }
 
 function InventoryFilters({
   status,
   category,
   species,
+  speciesOptions,
   onStatusChange,
   onCategoryChange,
   onSpeciesChange,
 }: InventoryFiltersProps): JSX.Element {
   function handleStatusChange(event: ChangeEvent<HTMLSelectElement>): void {
-    onStatusChange(event.target.value as StatusFilter)
+    const value = event.target.value
+    if (
+      value === 'All' ||
+      value === 'Available' ||
+      value === 'Reserved' ||
+      value === 'Sold'
+    ) {
+      onStatusChange(value)
+    }
   }
 
   function handleCategoryChange(event: ChangeEvent<HTMLSelectElement>): void {
@@ -40,7 +43,7 @@ function InventoryFilters({
   }
 
   function handleSpeciesChange(event: ChangeEvent<HTMLSelectElement>): void {
-    onSpeciesChange(event.target.value as SpeciesFilter)
+    onSpeciesChange(event.target.value)
   }
 
   return (
@@ -78,7 +81,8 @@ function InventoryFilters({
           onChange={handleSpeciesChange}
           aria-label="Filter by species"
         >
-          {SPECIES_FILTERS.map((option) => (
+          <option value="All">All species</option>
+          {speciesOptions.map((option) => (
             <option key={option.value} value={option.value}>
               {option.label}
             </option>

@@ -9,6 +9,7 @@ import {
 export interface AnimalCardProps {
   animal: Animal
   onViewDetails: (animal: Animal) => void
+  onDelete: (animal: Animal) => void
 }
 
 function statusClassName(status: AnimalStatus | string | undefined): string {
@@ -25,7 +26,11 @@ function statusClassName(status: AnimalStatus | string | undefined): string {
   return 'status-badge status-badge--available'
 }
 
-function AnimalCard({ animal, onViewDetails }: AnimalCardProps): JSX.Element {
+function AnimalCard({
+  animal,
+  onViewDetails,
+  onDelete,
+}: AnimalCardProps): JSX.Element {
   const name: string = animal.name || 'Unknown animal'
   const status = animal.status || 'Available'
   const speciesBreed = [animal.species, animal.breed].filter(Boolean).join(' · ')
@@ -86,13 +91,22 @@ function AnimalCard({ animal, onViewDetails }: AnimalCardProps): JSX.Element {
           <p className="animal-card-price">{formatCurrency(animal.sellingPrice)}</p>
         )}
 
-        <button
-          className="details-btn"
-          type="button"
-          onClick={() => onViewDetails(animal)}
-        >
-          View Details
-        </button>
+        <div className="animal-card-actions">
+          <button
+            className="details-btn"
+            type="button"
+            onClick={() => onViewDetails(animal)}
+          >
+            View Details
+          </button>
+          <button
+            className="delete-btn"
+            type="button"
+            onClick={() => onDelete(animal)}
+          >
+            Delete
+          </button>
+        </div>
       </div>
     </li>
   )

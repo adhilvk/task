@@ -25,3 +25,10 @@ export interface AnimalQuery {
   category?: string;
   species?: string;
 }
+
+export interface AnimalImageFile {
+  originalname: string;
+  mimetype: string;
+  size: number;
+  buffer: Buffer;
+}

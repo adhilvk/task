@@ -1,7 +1,21 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+  Query,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { memoryStorage } from 'multer';
 
 import { AnimalsService } from './animals.service';
 import { Animal } from './interfaces/animal.interface';
+import type { AnimalImageFile } from './interfaces/animal.interface';
 
 @Controller('animals')
 export class AnimalsController {
@@ -20,5 +34,27 @@ export class AnimalsController {
       category,
       species,
     });
+  }
+
+  @Post()
+  @UseInterceptors(
+    FileInterceptor('image', {
+      storage: memoryStorage(),
+      limits: { fileSize: 5 * 1024 * 1024 },
+    }),
+  )
+  async createAnimal(
+    @Body() body: Record<string, string>,
+    @UploadedFile() image?: AnimalImageFile,
+  ): Promise<Animal> {
+    return this.animalsService.createAnimal(body, image);
+  }
+
+  @Delete(':id')
+  async deleteAnimal(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<{ message: string }> {
+    await this.animalsService.deleteAnimal(id);
+    return { message: 'Animal deleted' };
   }
 }

@@ -5,9 +5,14 @@ import AnimalCard from './AnimalCard'
 export interface AnimalListProps {
   animals: Animal[]
   onViewDetails: (animal: Animal) => void
+  onDelete: (animal: Animal) => void
 }
 
-function AnimalList({ animals, onViewDetails }: AnimalListProps): JSX.Element {
+function AnimalList({
+  animals,
+  onViewDetails,
+  onDelete,
+}: AnimalListProps): JSX.Element {
   return (
     <ul className={animals.length === 1 ? 'list list--single' : 'list'}>
       {animals.map((animal: Animal, index: number) => (
@@ -15,6 +20,7 @@ function AnimalList({ animals, onViewDetails }: AnimalListProps): JSX.Element {
           key={animal.id || animal.name || index}
           animal={animal}
           onViewDetails={onViewDetails}
+          onDelete={onDelete}
         />
       ))}
     </ul>

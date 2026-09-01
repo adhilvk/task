@@ -6,6 +6,7 @@ import SearchInput from './components/SearchInput'
 import InventoryFilters from './components/InventoryFilters'
 import AnimalList from './components/AnimalList'
 import AnimalDetails from './components/AnimalDetails'
+import AddAnimalForm from './components/AddAnimalForm'
 import * as animalService from './services/animalService'
 import type { Animal } from './types/animal'
 import type {
@@ -24,6 +25,7 @@ function App(): JSX.Element {
   const [speciesFilter, setSpeciesFilter] = useState<string>('All')
   const [animals, setAnimals] = useState<Animal[]>([])
   const [selectedAnimal, setSelectedAnimal] = useState<Animal | null>(null)
+  const [showAddForm, setShowAddForm] = useState<boolean>(false)
   const [loading, setLoading] = useState<boolean>(false)
   const [error, setError] = useState<string>('')
 
@@ -68,6 +70,36 @@ function App(): JSX.Element {
     setAppliedSearch(inputValue.trim())
   }
 
+  async function handleCreateAnimal(formData: FormData): Promise<void> {
+    await animalService.createAnimal(formData)
+    setShowAddForm(false)
+    await loadAnimals()
+  }
+
+  async function handleDeleteAnimal(animal: Animal): Promise<void> {
+    const confirmed = window.confirm(
+      `Delete ${animal.name}? This cannot be undone.`,
+    )
+
+    if (!confirmed) {
+      return
+    }
+
+    setError('')
+
+    try {
+      await animalService.deleteAnimal(animal.id)
+
+      if (selectedAnimal?.id === animal.id) {
+        setSelectedAnimal(null)
+      }
+
+      await loadAnimals()
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Could not delete animal')
+    }
+  }
+
   return (
     <div className="page">
       <Header />
@@ -99,6 +131,16 @@ function App(): JSX.Element {
             onCategoryChange={(value) => setCategoryFilter(value)}
             onSpeciesChange={(value) => setSpeciesFilter(value)}
           />
+
+          <div className="toolbar-actions">
+            <button
+              className="add-animal-btn"
+              type="button"
+              onClick={() => setShowAddForm(true)}
+            >
+              Add Animal
+            </button>
+          </div>
         </div>
 
         {loading && (
@@ -113,11 +155,14 @@ function App(): JSX.Element {
           <p className="status">No animals found</p>
         )}
 
-        {!loading && !error && visibleAnimals.length > 0 && (
+        {!loading && visibleAnimals.length > 0 && (
           <AnimalList
             key={`${statusFilter}-${categoryFilter}-${speciesFilter}-${appliedSearch}`}
             animals={visibleAnimals}
             onViewDetails={setSelectedAnimal}
+            onDelete={(animal) => {
+              void handleDeleteAnimal(animal)
+            }}
           />
         )}
       </main>
@@ -126,6 +171,13 @@ function App(): JSX.Element {
         <AnimalDetails
           animal={selectedAnimal}
           onClose={() => setSelectedAnimal(null)}
+        />
+      )}
+
+      {showAddForm && (
+        <AddAnimalForm
+          onClose={() => setShowAddForm(false)}
+          onSubmit={handleCreateAnimal}
         />
       )}
     </div>

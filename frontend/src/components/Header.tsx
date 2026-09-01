@@ -19,7 +19,7 @@ function Header(_props: HeaderProps = {}): JSX.Element {
     <header className="header">
       <span className="logo">
         <PawIcon />
-        Animal Explorer
+        Animal Management
       </span>
     </header>
   )

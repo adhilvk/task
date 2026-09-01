@@ -1,24 +1,36 @@
-import type { Animal } from '../types/animal'
+import type { Animal, FetchAnimalsParams } from '../types/animal'
 
-const ANIMALS_URL = '/animals.json'
+const ANIMALS_URL = '/animals'
 
 export async function fetchAnimals(
-  name?: string,
+  params: FetchAnimalsParams = {},
 ): Promise<Animal[]> {
-  const response: Response = await fetch(ANIMALS_URL)
+  const searchParams = new URLSearchParams()
+
+  if (params.name) {
+    searchParams.set('name', params.name)
+  }
+
+  if (params.status) {
+    searchParams.set('status', params.status)
+  }
+
+  if (params.category) {
+    searchParams.set('category', params.category)
+  }
+
+  if (params.species) {
+    searchParams.set('species', params.species)
+  }
+
+  const query = searchParams.toString()
+  const url = query ? `${ANIMALS_URL}?${query}` : ANIMALS_URL
+  const response: Response = await fetch(url)
 
   if (!response.ok) {
     throw new Error('Could not fetch animals')
   }
 
   const data: unknown = await response.json()
-  const animals: Animal[] = Array.isArray(data) ? (data as Animal[]) : []
-
-  if (!name) {
-    return animals
-  }
-
-  return animals.filter((animal) =>
-    animal.name.toLowerCase().includes(name.toLowerCase()),
-  )
+  return Array.isArray(data) ? (data as Animal[]) : []
 }

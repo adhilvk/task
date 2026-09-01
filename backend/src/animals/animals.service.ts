@@ -1,21 +1,53 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { LOCAL_ANIMALS } from './animals.data';
-import { Animal } from './interfaces/animal.interface';
+import { Animal, AnimalQuery } from './interfaces/animal.interface';
 
 @Injectable()
 export class AnimalsService {
   private readonly logger = new Logger(AnimalsService.name);
 
-  async getAnimals(name?: string): Promise<Animal[]> {
+  async getAnimals(query: AnimalQuery = {}): Promise<Animal[]> {
     const animals = await this.loadAnimals();
 
-    if (!name) {
-      return animals;
+    return animals.filter((animal) => this.matchesQuery(animal, query));
+  }
+
+  private matchesQuery(animal: Animal, query: AnimalQuery): boolean {
+    const search = query.name?.trim().toLowerCase();
+    const status = query.status?.trim().toLowerCase();
+    const category = query.category?.trim().toLowerCase();
+    const species = query.species?.trim().toLowerCase();
+
+    if (search) {
+      const searchableFields = [
+        animal.name,
+        animal.species,
+        animal.breed,
+        animal.category,
+        animal.location,
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
+
+      if (!searchableFields.includes(search)) {
+        return false;
+      }
     }
 
-    return animals.filter((animal) =>
-      animal.name.toLowerCase().includes(name.toLowerCase()),
-    );
+    if (status && animal.status?.toLowerCase() !== status) {
+      return false;
+    }
+
+    if (category && animal.category?.toLowerCase() !== category) {
+      return false;
+    }
+
+    if (species && animal.species?.toLowerCase() !== species) {
+      return false;
+    }
+
+    return true;
   }
 
   private hasR2Config(): boolean {

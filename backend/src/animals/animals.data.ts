@@ -75,7 +75,7 @@ export const LOCAL_ANIMALS: Animal[] = [
     purchasePrice: 45000,
     sellingPrice: 62000,
     status: 'Available',
-    location: 'Pachyderm Pavilion',
+    location: 'India',
     description:
       'Well-socialized bull elephant trained for safe handling and public viewing.',
     image:
@@ -95,7 +95,7 @@ export const LOCAL_ANIMALS: Animal[] = [
     purchasePrice: 40000,
     sellingPrice: 58000,
     status: 'Sold',
-    location: 'Pachyderm Pavilion',
+    location: 'Africa',
     description:
       'Experienced cow sold to a conservation center. Records retained for inventory history.',
     image:

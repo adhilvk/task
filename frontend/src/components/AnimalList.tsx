@@ -5,12 +5,14 @@ import AnimalCard from './AnimalCard'
 export interface AnimalListProps {
   animals: Animal[]
   onViewDetails: (animal: Animal) => void
+  onEdit: (animal: Animal) => void
   onDelete: (animal: Animal) => void
 }
 
 function AnimalList({
   animals,
   onViewDetails,
+  onEdit,
   onDelete,
 }: AnimalListProps): JSX.Element {
   return (
@@ -20,6 +22,7 @@ function AnimalList({
           key={animal.id || animal.name || index}
           animal={animal}
           onViewDetails={onViewDetails}
+          onEdit={onEdit}
           onDelete={onDelete}
         />
       ))}

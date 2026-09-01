@@ -25,7 +25,8 @@ function App(): JSX.Element {
   const [speciesFilter, setSpeciesFilter] = useState<string>('All')
   const [animals, setAnimals] = useState<Animal[]>([])
   const [selectedAnimal, setSelectedAnimal] = useState<Animal | null>(null)
-  const [showAddForm, setShowAddForm] = useState<boolean>(false)
+  const [formAnimal, setFormAnimal] = useState<Animal | null>(null)
+  const [showForm, setShowForm] = useState<boolean>(false)
   const [loading, setLoading] = useState<boolean>(false)
   const [error, setError] = useState<string>('')
 
@@ -72,8 +73,38 @@ function App(): JSX.Element {
 
   async function handleCreateAnimal(formData: FormData): Promise<void> {
     await animalService.createAnimal(formData)
-    setShowAddForm(false)
+    closeForm()
     await loadAnimals()
+  }
+
+  async function handleUpdateAnimal(formData: FormData): Promise<void> {
+    if (!formAnimal) {
+      return
+    }
+
+    await animalService.updateAnimal(formAnimal.id, formData)
+    closeForm()
+
+    if (selectedAnimal?.id === formAnimal.id) {
+      setSelectedAnimal(null)
+    }
+
+    await loadAnimals()
+  }
+
+  function openAddForm(): void {
+    setFormAnimal(null)
+    setShowForm(true)
+  }
+
+  function openEditForm(animal: Animal): void {
+    setFormAnimal(animal)
+    setShowForm(true)
+  }
+
+  function closeForm(): void {
+    setShowForm(false)
+    setFormAnimal(null)
   }
 
   async function handleDeleteAnimal(animal: Animal): Promise<void> {
@@ -136,7 +167,7 @@ function App(): JSX.Element {
             <button
               className="add-animal-btn"
               type="button"
-              onClick={() => setShowAddForm(true)}
+              onClick={openAddForm}
             >
               Add Animal
             </button>
@@ -160,6 +191,7 @@ function App(): JSX.Element {
             key={`${statusFilter}-${categoryFilter}-${speciesFilter}-${appliedSearch}`}
             animals={visibleAnimals}
             onViewDetails={setSelectedAnimal}
+            onEdit={openEditForm}
             onDelete={(animal) => {
               void handleDeleteAnimal(animal)
             }}
@@ -174,10 +206,11 @@ function App(): JSX.Element {
         />
       )}
 
-      {showAddForm && (
+      {showForm && (
         <AddAnimalForm
-          onClose={() => setShowAddForm(false)}
-          onSubmit={handleCreateAnimal}
+          animal={formAnimal ?? undefined}
+          onClose={closeForm}
+          onSubmit={formAnimal ? handleUpdateAnimal : handleCreateAnimal}
         />
       )}
     </div>

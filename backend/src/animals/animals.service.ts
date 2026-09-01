@@ -60,6 +60,42 @@ export class AnimalsService {
     return animal;
   }
 
+  async updateAnimal(
+    id: number,
+    body: Record<string, string>,
+    image?: AnimalImageFile,
+  ): Promise<Animal> {
+    const animals = await this.loadAnimalsForWrite();
+    const index = animals.findIndex((animal) => animal.id === id);
+
+    if (index === -1) {
+      throw new NotFoundException(`Animal ${id} was not found`);
+    }
+
+    const current = animals[index];
+    const updated: Animal = {
+      ...current,
+      ...this.parseAnimalFields(body),
+      id: current.id,
+      image: current.image,
+    };
+
+    if (image) {
+      const previousImage = current.image;
+      updated.image = await this.uploadImage(image, animals);
+      animals[index] = updated;
+
+      if (previousImage && !this.isImageUsed(animals, previousImage)) {
+        await this.deleteImage(previousImage);
+      }
+    } else {
+      animals[index] = updated;
+    }
+
+    await this.persistAnimals(animals);
+    return updated;
+  }
+
   async deleteAnimal(id: number): Promise<void> {
     const animals = await this.loadAnimalsForWrite();
     const index = animals.findIndex((animal) => animal.id === id);
@@ -69,11 +105,8 @@ export class AnimalsService {
     }
 
     const [removed] = animals.splice(index, 1);
-    const imageStillUsed = animals.some(
-      (animal) => animal.image && animal.image === removed.image,
-    );
 
-    if (removed.image && !imageStillUsed) {
+    if (removed.image && !this.isImageUsed(animals, removed.image)) {
       await this.deleteImage(removed.image);
     }
 
@@ -264,14 +297,20 @@ export class AnimalsService {
     body: Record<string, string>,
     animals: Animal[],
   ): Animal {
-    const name = this.requireText(body.name, 'name');
-    const status = this.parseStatus(body.status);
     const nextId =
       animals.reduce((max, animal) => Math.max(max, animal.id || 0), 0) + 1;
 
     return {
       id: nextId,
-      name,
+      ...this.parseAnimalFields(body),
+    };
+  }
+
+  private parseAnimalFields(
+    body: Record<string, string>,
+  ): Omit<Animal, 'id' | 'image'> {
+    return {
+      name: this.requireText(body.name, 'name'),
       species: this.requireText(body.species, 'species'),
       category: this.requireText(body.category, 'category'),
       breed: this.requireText(body.breed, 'breed'),
@@ -289,10 +328,14 @@ export class AnimalsService {
       sellingPrice: this.parseNumber(body.sellingPrice, 'sellingPrice', {
         min: 0,
       }),
-      status,
+      status: this.parseStatus(body.status),
       location: this.requireText(body.location, 'location'),
       description: body.description?.trim() ?? '',
     };
+  }
+
+  private isImageUsed(animals: Animal[], imageUrl: string): boolean {
+    return animals.some((animal) => animal.image === imageUrl);
   }
 
   private requireText(value: string | undefined, field: string): string {

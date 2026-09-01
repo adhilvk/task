@@ -6,6 +6,7 @@ import {
   Param,
   ParseIntPipe,
   Post,
+  Put,
   Query,
   UploadedFile,
   UseInterceptors,
@@ -48,6 +49,21 @@ export class AnimalsController {
     @UploadedFile() image?: AnimalImageFile,
   ): Promise<Animal> {
     return this.animalsService.createAnimal(body, image);
+  }
+
+  @Put(':id')
+  @UseInterceptors(
+    FileInterceptor('image', {
+      storage: memoryStorage(),
+      limits: { fileSize: 5 * 1024 * 1024 },
+    }),
+  )
+  async updateAnimal(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: Record<string, string>,
+    @UploadedFile() image?: AnimalImageFile,
+  ): Promise<Animal> {
+    return this.animalsService.updateAnimal(id, body, image);
   }
 
   @Delete(':id')

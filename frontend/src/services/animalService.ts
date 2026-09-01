@@ -82,3 +82,19 @@ export async function deleteAnimal(id: number): Promise<void> {
     throw new Error(await readError(response, 'Could not delete animal'))
   }
 }
+
+export async function updateAnimal(
+  id: number,
+  formData: FormData,
+): Promise<Animal> {
+  const response: Response = await fetch(`${ANIMALS_URL}/${id}`, {
+    method: 'PUT',
+    body: formData,
+  })
+
+  if (!response.ok) {
+    throw new Error(await readError(response, 'Could not update animal'))
+  }
+
+  return (await response.json()) as Animal
+}

@@ -9,6 +9,7 @@ import {
 export interface AnimalCardProps {
   animal: Animal
   onViewDetails: (animal: Animal) => void
+  onEdit: (animal: Animal) => void
   onDelete: (animal: Animal) => void
 }
 
@@ -29,6 +30,7 @@ function statusClassName(status: AnimalStatus | string | undefined): string {
 function AnimalCard({
   animal,
   onViewDetails,
+  onEdit,
   onDelete,
 }: AnimalCardProps): JSX.Element {
   const name: string = animal.name || 'Unknown animal'
@@ -98,6 +100,13 @@ function AnimalCard({
             onClick={() => onViewDetails(animal)}
           >
             View Details
+          </button>
+          <button
+            className="edit-btn"
+            type="button"
+            onClick={() => onEdit(animal)}
+          >
+            Edit
           </button>
           <button
             className="delete-btn"

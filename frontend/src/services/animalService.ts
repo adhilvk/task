@@ -1,6 +1,10 @@
 import type { Animal, FetchAnimalsParams } from '../types/animal'
 
-const ANIMALS_URL = '/animals'
+const API_BASE = String(
+  import.meta.env.VITE_API_URL ?? 'https://task-kq96.onrender.com',
+).replace(/\/$/, '')
+
+const ANIMALS_URL = `${API_BASE}/animals`
 
 function readErrorMessage(data: unknown, fallback: string): string {
   if (data && typeof data === 'object' && 'message' in data) {

@@ -8,8 +8,8 @@
     "backend": {
       "root": "backend",
       "framework": "nestjs",
-      "entrypoint": "src/main.ts",
-      "includeFiles": ["src/**"]
+      "entrypoint": "src/main.ts"
+      
     }
   },
   "rewrites": [

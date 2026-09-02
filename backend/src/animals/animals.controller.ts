@@ -12,7 +12,6 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { memoryStorage } from 'multer';
 
 import { AnimalsService } from './animals.service';
 import { Animal } from './interfaces/animal.interface';
@@ -40,7 +39,6 @@ export class AnimalsController {
   @Post()
   @UseInterceptors(
     FileInterceptor('image', {
-      storage: memoryStorage(),
       limits: { fileSize: 5 * 1024 * 1024 },
     }),
   )
@@ -54,7 +52,6 @@ export class AnimalsController {
   @Put(':id')
   @UseInterceptors(
     FileInterceptor('image', {
-      storage: memoryStorage(),
       limits: { fileSize: 5 * 1024 * 1024 },
     }),
   )

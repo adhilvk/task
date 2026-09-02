@@ -4,27 +4,9 @@
     "frontend": {
       "root": "frontend",
       "framework": "vite"
-    },
-    "backend": {
-      "root": "backend",
-      "framework": "nestjs",
-      "entrypoint": "src/main.ts"
-      
     }
   },
   "rewrites": [
-    {
-      "source": "/animals",
-      "destination": {
-        "service": "backend"
-      }
-    },
-    {
-      "source": "/animals/:path*",
-      "destination": {
-        "service": "backend"
-      }
-    },
     {
       "source": "/(.*)",
       "destination": {

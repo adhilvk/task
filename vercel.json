@@ -4,12 +4,25 @@
     "frontend": {
       "root": "frontend",
       "framework": "vite"
+    },
+    "backend": {
+      "root": "backend"
     }
   },
   "rewrites": [
     {
       "source": "/animals",
-      "destination": "/animals.json"
+      "destination": {
+        "type": "service",
+        "service": "backend"
+      }
+    },
+    {
+      "source": "/animals/:id",
+      "destination": {
+        "type": "service",
+        "service": "backend"
+      }
     },
     {
       "source": "/(.*)",

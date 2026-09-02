@@ -30,8 +30,10 @@ function App(): JSX.Element {
   const [loading, setLoading] = useState<boolean>(false)
   const [error, setError] = useState<string>('')
 
-  async function loadAnimals(): Promise<void> {
-    setLoading(true)
+  async function loadAnimals(options?: { silent?: boolean }): Promise<void> {
+    if (!options?.silent) {
+      setLoading(true)
+    }
     setError('')
 
     try {
@@ -41,9 +43,13 @@ function App(): JSX.Element {
       setError(
         err instanceof Error ? err.message : 'Could not fetch animals',
       )
-      setAnimals([])
+      if (!options?.silent) {
+        setAnimals([])
+      }
     } finally {
-      setLoading(false)
+      if (!options?.silent) {
+        setLoading(false)
+      }
     }
   }
 
@@ -72,24 +78,31 @@ function App(): JSX.Element {
   }
 
   async function handleCreateAnimal(formData: FormData): Promise<void> {
-    await animalService.createAnimal(formData)
+    const created = await animalService.createAnimal(formData)
     closeForm()
-    await loadAnimals()
+    setAnimals((current) => [
+      ...current.filter((animal) => animal.id !== created.id),
+      created,
+    ])
+    await loadAnimals({ silent: true })
   }
 
   async function handleUpdateAnimal(formData: FormData): Promise<void> {
     if (!formAnimal) {
-      return
+      throw new Error('No animal selected to edit')
     }
 
-    await animalService.updateAnimal(formAnimal.id, formData)
+    const updated = await animalService.updateAnimal(formAnimal.id, formData)
     closeForm()
+    setAnimals((current) =>
+      current.map((animal) => (animal.id === updated.id ? updated : animal)),
+    )
 
-    if (selectedAnimal?.id === formAnimal.id) {
-      setSelectedAnimal(null)
+    if (selectedAnimal?.id === updated.id) {
+      setSelectedAnimal(updated)
     }
 
-    await loadAnimals()
+    await loadAnimals({ silent: true })
   }
 
   function openAddForm(): void {
@@ -125,7 +138,11 @@ function App(): JSX.Element {
         setSelectedAnimal(null)
       }
 
-      await loadAnimals()
+      setAnimals((current) =>
+        current.filter((item) => item.id !== animal.id),
+      )
+
+      await loadAnimals({ silent: true })
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Could not delete animal')
     }

@@ -24,6 +24,7 @@ const ANIMALS_KEY = 'animals.json';
 const IMAGE_FOLDER = 'images';
 const ALLOWED_IMAGE_TYPES = [
   'image/jpeg',
+  'image/jpg',
   'image/png',
   'image/webp',
   'image/gif',
@@ -50,12 +51,13 @@ export class AnimalsService {
     const animals = await this.loadAnimalsForWrite();
     const animal = this.buildAnimal(body, animals);
 
-    if (image) {
+    if (this.hasUploadedImage(image)) {
       animal.image = await this.uploadImage(image, animals);
     }
 
     animals.push(animal);
     await this.persistAnimals(animals);
+    this.logger.log(`Created animal ${animal.id} (${animal.name})`);
 
     return animal;
   }
@@ -80,7 +82,7 @@ export class AnimalsService {
       image: current.image,
     };
 
-    if (image) {
+    if (this.hasUploadedImage(image)) {
       const previousImage = current.image;
       updated.image = await this.uploadImage(image, animals);
       animals[index] = updated;
@@ -93,6 +95,7 @@ export class AnimalsService {
     }
 
     await this.persistAnimals(animals);
+    this.logger.log(`Updated animal ${updated.id} (${updated.name})`);
     return updated;
   }
 
@@ -111,6 +114,7 @@ export class AnimalsService {
     }
 
     await this.persistAnimals(animals);
+    this.logger.log(`Deleted animal ${id}`);
   }
 
   private isActiveFilter(value?: string): value is string {
@@ -336,6 +340,12 @@ export class AnimalsService {
 
   private isImageUsed(animals: Animal[], imageUrl: string): boolean {
     return animals.some((animal) => animal.image === imageUrl);
+  }
+
+  private hasUploadedImage(
+    image?: AnimalImageFile,
+  ): image is AnimalImageFile {
+    return Boolean(image?.buffer && image.size > 0);
   }
 
   private requireText(value: string | undefined, field: string): string {

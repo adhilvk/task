@@ -27,6 +27,17 @@ async function readError(response: Response, fallback: string): Promise<string> 
   }
 }
 
+function apiFetch(url: string, init: RequestInit = {}): Promise<Response> {
+  return fetch(url, {
+    cache: 'no-store',
+    ...init,
+    headers: {
+      'Cache-Control': 'no-store',
+      ...(init.headers ?? {}),
+    },
+  })
+}
+
 export async function fetchAnimals(
   params: FetchAnimalsParams = {},
 ): Promise<Animal[]> {
@@ -50,7 +61,7 @@ export async function fetchAnimals(
 
   const query = searchParams.toString()
   const url = query ? `${ANIMALS_URL}?${query}` : ANIMALS_URL
-  const response: Response = await fetch(url)
+  const response: Response = await apiFetch(url)
 
   if (!response.ok) {
     throw new Error(await readError(response, 'Could not fetch animals'))
@@ -61,7 +72,7 @@ export async function fetchAnimals(
 }
 
 export async function createAnimal(formData: FormData): Promise<Animal> {
-  const response: Response = await fetch(ANIMALS_URL, {
+  const response: Response = await apiFetch(ANIMALS_URL, {
     method: 'POST',
     body: formData,
   })
@@ -74,7 +85,7 @@ export async function createAnimal(formData: FormData): Promise<Animal> {
 }
 
 export async function deleteAnimal(id: number): Promise<void> {
-  const response: Response = await fetch(`${ANIMALS_URL}/${id}`, {
+  const response: Response = await apiFetch(`${ANIMALS_URL}/${id}`, {
     method: 'DELETE',
   })
 
@@ -87,7 +98,7 @@ export async function updateAnimal(
   id: number,
   formData: FormData,
 ): Promise<Animal> {
-  const response: Response = await fetch(`${ANIMALS_URL}/${id}`, {
+  const response: Response = await apiFetch(`${ANIMALS_URL}/${id}`, {
     method: 'PUT',
     body: formData,
   })

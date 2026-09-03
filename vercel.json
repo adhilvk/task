@@ -8,6 +8,10 @@
   },
   "rewrites": [
     {
+      "source": "/api/:path*",
+      "destination": "http://16.170.245.239/:path*"
+    },
+    {
       "source": "/(.*)",
       "destination": {
         "service": "frontend"

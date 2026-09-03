@@ -1,8 +1,6 @@
 import type { Animal, FetchAnimalsParams } from '../types/animal'
 
-const API_BASE = String(
-  import.meta.env.VITE_API_URL ?? 'https://task-kq96.onrender.com',
-).replace(/\/$/, '')
+const API_BASE = '/api'
 
 const ANIMALS_URL = `${API_BASE}/animals`
 
